@@ -3,125 +3,297 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mini Reconciliation Tool</title>
+    <title>Task Manager - Organize Your Life</title>
     <link rel="stylesheet" href="assets/css/style.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-    <div class="container">
-        <header class="header">
-            <h1><i class="fas fa-calculator"></i> Mini Reconciliation Tool</h1>
-            <p>Compare and reconcile financial transactions with ease</p>
-        </header>
-
-        <div class="upload-section">
-            <div class="upload-card">
-                <h2><i class="fas fa-upload"></i> Upload Transaction Files</h2>
-                <form id="reconciliationForm" enctype="multipart/form-data">
-                    <div class="file-input-group">
-                        <div class="file-input-wrapper">
-                            <label for="file1" class="file-label">
-                                <i class="fas fa-file-csv"></i>
-                                <span>Source File (CSV)</span>
-                                <input type="file" id="file1" name="file1" accept=".csv" required>
-                            </label>
-                            <div class="file-info" id="file1-info"></div>
-                        </div>
-                        
-                        <div class="file-input-wrapper">
-                            <label for="file2" class="file-label">
-                                <i class="fas fa-file-csv"></i>
-                                <span>Target File (CSV)</span>
-                                <input type="file" id="file2" name="file2" accept=".csv" required>
-                            </label>
-                            <div class="file-info" id="file2-info"></div>
-                        </div>
-                    </div>
-
-                    <div class="settings-section">
-                        <h3><i class="fas fa-cog"></i> Reconciliation Settings</h3>
-                        <div class="settings-grid">
-                            <div class="setting-item">
-                                <label for="tolerance">Amount Tolerance:</label>
-                                <input type="number" id="tolerance" name="tolerance" step="0.01" value="0.00" min="0">
-                            </div>
-                            <div class="setting-item">
-                                <label for="date_range">Date Range (days):</label>
-                                <input type="number" id="date_range" name="date_range" value="0" min="0">
-                            </div>
-                        </div>
-                    </div>
-
-                    <button type="submit" class="btn-primary" id="reconcileBtn">
-                        <i class="fas fa-sync-alt"></i> Start Reconciliation
-                    </button>
-                </form>
-            </div>
-        </div>
-
-        <div class="results-section" id="resultsSection" style="display: none;">
-            <div class="results-header">
-                <h2><i class="fas fa-chart-bar"></i> Reconciliation Results</h2>
-                <div class="summary-cards" id="summaryCards"></div>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1><i class="fas fa-tasks"></i> TaskFlow</h1>
             </div>
             
-            <div class="tabs">
-                <button class="tab-button active" data-tab="matched">Matched Transactions</button>
-                <button class="tab-button" data-tab="unmatched-source">Unmatched Source</button>
-                <button class="tab-button" data-tab="unmatched-target">Unmatched Target</button>
-                <button class="tab-button" data-tab="duplicates">Potential Duplicates</button>
-            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="#" class="nav-link active" data-view="dashboard">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a></li>
+                    <li><a href="#" class="nav-link" data-view="all-tasks">
+                        <i class="fas fa-list"></i> All Tasks
+                    </a></li>
+                    <li><a href="#" class="nav-link" data-view="today">
+                        <i class="fas fa-calendar-day"></i> Today
+                    </a></li>
+                    <li><a href="#" class="nav-link" data-view="upcoming">
+                        <i class="fas fa-calendar-alt"></i> Upcoming
+                    </a></li>
+                    <li><a href="#" class="nav-link" data-view="completed">
+                        <i class="fas fa-check-circle"></i> Completed
+                    </a></li>
+                </ul>
+            </nav>
 
-            <div class="tab-content">
-                <div id="matched" class="tab-pane active">
-                    <div class="table-container">
-                        <table class="results-table" id="matchedTable">
-                            <thead></thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                </div>
-                
-                <div id="unmatched-source" class="tab-pane">
-                    <div class="table-container">
-                        <table class="results-table" id="unmatchedSourceTable">
-                            <thead></thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                </div>
-                
-                <div id="unmatched-target" class="tab-pane">
-                    <div class="table-container">
-                        <table class="results-table" id="unmatchedTargetTable">
-                            <thead></thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                </div>
-                
-                <div id="duplicates" class="tab-pane">
-                    <div class="table-container">
-                        <table class="results-table" id="duplicatesTable">
-                            <thead></thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div class="export-section">
-                <button class="btn-secondary" id="exportBtn">
-                    <i class="fas fa-download"></i> Export Results
+            <div class="sidebar-section">
+                <h3>Projects</h3>
+                <ul id="projectsList" class="projects-list">
+                    <!-- Dynamic project list -->
+                </ul>
+                <button class="btn-add-project" id="addProjectBtn">
+                    <i class="fas fa-plus"></i> Add Project
                 </button>
             </div>
-        </div>
+        </aside>
 
-        <div class="loading" id="loading" style="display: none;">
-            <div class="spinner"></div>
-            <p>Processing reconciliation...</p>
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="main-header">
+                <div class="header-left">
+                    <button class="mobile-menu-btn" id="mobileMenuBtn">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h2 id="pageTitle">Dashboard</h2>
+                </div>
+                
+                <div class="header-right">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchInput" placeholder="Search tasks...">
+                    </div>
+                    <button class="btn-primary" id="addTaskBtn">
+                        <i class="fas fa-plus"></i> Add Task
+                    </button>
+                </div>
+            </header>
+
+            <!-- Dashboard View -->
+            <div id="dashboard" class="view active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-tasks"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="totalTasks">0</h3>
+                            <p>Total Tasks</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon completed">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="completedTasks">0</h3>
+                            <p>Completed</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon pending">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="pendingTasks">0</h3>
+                            <p>Pending</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon overdue">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="overdueTasks">0</h3>
+                            <p>Overdue</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-sections">
+                    <div class="section">
+                        <h3>Today's Tasks</h3>
+                        <div id="todayTasks" class="task-list">
+                            <!-- Today's tasks will be loaded here -->
+                        </div>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>Upcoming Deadlines</h3>
+                        <div id="upcomingTasks" class="task-list">
+                            <!-- Upcoming tasks will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- All Tasks View -->
+            <div id="all-tasks" class="view">
+                <div class="filters-bar">
+                    <div class="filter-group">
+                        <select id="statusFilter" class="filter-select">
+                            <option value="">All Status</option>
+                            <option value="pending">Pending</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                        
+                        <select id="priorityFilter" class="filter-select">
+                            <option value="">All Priority</option>
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                        
+                        <select id="projectFilter" class="filter-select">
+                            <option value="">All Projects</option>
+                        </select>
+                    </div>
+                    
+                    <div class="sort-group">
+                        <select id="sortBy" class="filter-select">
+                            <option value="created_desc">Newest First</option>
+                            <option value="created_asc">Oldest First</option>
+                            <option value="due_asc">Due Date (Soon)</option>
+                            <option value="due_desc">Due Date (Late)</option>
+                            <option value="priority_desc">Priority (High)</option>
+                            <option value="priority_asc">Priority (Low)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="allTasksList" class="task-list">
+                    <!-- All tasks will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Other Views -->
+            <div id="today" class="view">
+                <div id="todayTasksList" class="task-list">
+                    <!-- Today's tasks will be loaded here -->
+                </div>
+            </div>
+
+            <div id="upcoming" class="view">
+                <div id="upcomingTasksList" class="task-list">
+                    <!-- Upcoming tasks will be loaded here -->
+                </div>
+            </div>
+
+            <div id="completed" class="view">
+                <div id="completedTasksList" class="task-list">
+                    <!-- Completed tasks will be loaded here -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Task Modal -->
+    <div id="taskModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Add New Task</h3>
+                <button class="modal-close" id="closeModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="taskForm" class="modal-body">
+                <input type="hidden" id="taskId">
+                
+                <div class="form-group">
+                    <label for="taskTitle">Task Title *</label>
+                    <input type="text" id="taskTitle" required placeholder="Enter task title">
+                </div>
+                
+                <div class="form-group">
+                    <label for="taskDescription">Description</label>
+                    <textarea id="taskDescription" rows="3" placeholder="Enter task description"></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="taskPriority">Priority</label>
+                        <select id="taskPriority">
+                            <option value="low">Low</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="taskProject">Project</label>
+                        <select id="taskProject">
+                            <option value="">No Project</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="taskDueDate">Due Date</label>
+                        <input type="date" id="taskDueDate">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="taskDueTime">Due Time</label>
+                        <input type="time" id="taskDueTime">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="taskTags">Tags (comma separated)</label>
+                    <input type="text" id="taskTags" placeholder="work, urgent, meeting">
+                </div>
+            </form>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" id="cancelTask">Cancel</button>
+                <button type="submit" form="taskForm" class="btn-primary" id="saveTask">Save Task</button>
+            </div>
         </div>
     </div>
+
+    <!-- Project Modal -->
+    <div id="projectModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Project</h3>
+                <button class="modal-close" id="closeProjectModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="projectForm" class="modal-body">
+                <div class="form-group">
+                    <label for="projectName">Project Name *</label>
+                    <input type="text" id="projectName" required placeholder="Enter project name">
+                </div>
+                
+                <div class="form-group">
+                    <label for="projectColor">Color</label>
+                    <div class="color-picker">
+                        <input type="color" id="projectColor" value="#667eea">
+                    </div>
+                </div>
+            </form>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" id="cancelProject">Cancel</button>
+                <button type="submit" form="projectForm" class="btn-primary">Save Project</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading" class="loading" style="display: none;">
+        <div class="spinner"></div>
+        <p>Loading...</p>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="toast-container"></div>
 
     <script src="assets/js/script.js"></script>
 </body>
