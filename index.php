@@ -1,3 +1,7 @@
+<?php
+// Check if user is logged in
+session_start();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -32,6 +36,9 @@
                     <li><a href="#" class="nav-link" data-view="completed">
                         <i class="fas fa-check-circle"></i> Completed
                     </a></li>
+                    <li class="admin-only" style="display: none;"><a href="#" class="nav-link" data-view="users">
+                        <i class="fas fa-users"></i> Users
+                    </a></li>
                 </ul>
             </nav>
 
@@ -61,6 +68,12 @@
                     <div class="search-box">
                         <i class="fas fa-search"></i>
                         <input type="text" id="searchInput" placeholder="Search tasks...">
+                    </div>
+                    <div class="user-menu">
+                        <span id="userName">User</span>
+                        <button class="btn-logout" id="logoutBtn">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
                     </div>
                     <button class="btn-primary" id="addTaskBtn">
                         <i class="fas fa-plus"></i> Add Task
@@ -186,6 +199,34 @@
                     <!-- Completed tasks will be loaded here -->
                 </div>
             </div>
+
+            <!-- Users View (Admin Only) -->
+            <div id="users" class="view">
+                <div class="view-header">
+                    <h3>User Management</h3>
+                    <button class="btn-primary" id="addUserBtn">
+                        <i class="fas fa-plus"></i> Add User
+                    </button>
+                </div>
+                
+                <div class="users-table-container">
+                    <table class="users-table">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Name</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <!-- Users will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </main>
     </div>
 
@@ -226,6 +267,15 @@
                         <label for="taskProject">Project</label>
                         <select id="taskProject" name="taskProject">
                             <option value="">No Project</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row admin-only" style="display: none;">
+                    <div class="form-group">
+                        <label for="taskAssignedTo">Assign To</label>
+                        <select id="taskAssignedTo" name="taskAssignedTo">
+                            <option value="">Select User</option>
                         </select>
                     </div>
                 </div>
@@ -282,6 +332,73 @@
             <div class="modal-footer">
                 <button type="button" class="btn-secondary" id="cancelProject">Cancel</button>
                 <button type="submit" form="projectForm" class="btn-primary">Save Project</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Modal -->
+    <div id="userModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="userModalTitle">Add New User</h3>
+                <button class="modal-close" id="closeUserModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="userForm" class="modal-body">
+                <input type="hidden" id="userId" name="userId">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="userFirstName">First Name</label>
+                        <input type="text" id="userFirstName" name="userFirstName" placeholder="Enter first name">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="userLastName">Last Name</label>
+                        <input type="text" id="userLastName" name="userLastName" placeholder="Enter last name">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="userUsername">Username *</label>
+                    <input type="text" id="userUsername" name="userUsername" required placeholder="Enter username">
+                </div>
+                
+                <div class="form-group">
+                    <label for="userEmail">Email *</label>
+                    <input type="email" id="userEmail" name="userEmail" required placeholder="Enter email">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="userPassword">Password</label>
+                        <input type="password" id="userPassword" name="userPassword" placeholder="Enter password">
+                        <small>Leave blank to keep current password when editing</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="userRole">Role</label>
+                        <select id="userRole" name="userRole">
+                            <option value="user">User</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="userStatus">Status</label>
+                    <select id="userStatus" name="userStatus">
+                        <option value="1">Active</option>
+                        <option value="0">Inactive</option>
+                    </select>
+                </div>
+            </form>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" id="cancelUser">Cancel</button>
+                <button type="submit" form="userForm" class="btn-primary" id="saveUser">Save User</button>
             </div>
         </div>
     </div>

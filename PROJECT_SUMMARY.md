@@ -1,223 +1,243 @@
-# TaskFlow - Task Manager Application
+# TaskFlow - Project Implementation Summary
 
-## Overview
-TaskFlow is a modern, feature-rich task management application built with PHP, HTML, CSS, and JavaScript. It provides a comprehensive solution for organizing tasks, managing projects, and tracking productivity.
+## Project Overview
 
-## ✨ Features Implemented
+TaskFlow is a modern, secure, and extensible task management system. It supports user authentication, role-based access, project and task management, and is designed for both individual and team productivity.
 
-### 🎯 Core Task Management
-- ✅ Create, edit, and delete tasks
-- ✅ Mark tasks as complete/incomplete
-- ✅ Set task priorities (High, Medium, Low)
-- ✅ Add due dates and times
-- ✅ Task descriptions and notes
-- ✅ Tagging system for organization
-- ✅ Project association
+---
 
-### 📊 Dashboard & Analytics
-- ✅ Real-time statistics (Total, Completed, Pending, Overdue)
-- ✅ Today's tasks overview
-- ✅ Upcoming deadlines view
-- ✅ Progress tracking
+## How the App Works
 
-### 🏷️ Project Management
-- ✅ Create and manage projects
-- ✅ Color-coded project organization
-- ✅ Project-based task filtering
-- ✅ Task count per project
+### Authentication & Roles
 
-### 🔍 Advanced Filtering & Search
-- ✅ Real-time search functionality
-- ✅ Filter by status (Pending/Completed)
-- ✅ Filter by priority level
-- ✅ Filter by project
-- ✅ Multiple sorting options (Date, Priority, etc.)
+- **Login:** Users authenticate via username and password. Sessions are managed with secure tokens.
+- **Roles:** There are two roles: Admin and User. Admins have full control; users can only manage their own tasks.
 
-### 📱 User Experience
-- ✅ Responsive design for all devices
-- ✅ Modern, intuitive interface
-- ✅ Modal dialogs for task/project creation
-- ✅ Toast notifications for user feedback
-- ✅ Loading states and animations
-- ✅ Mobile-friendly navigation
+### Task Management
 
-### 🔧 Technical Features
-- ✅ RESTful API architecture
-- ✅ SQLite database with auto-setup
-- ✅ Sample data for demo purposes
-- ✅ CORS support for API access
-- ✅ Security headers and protections
-- ✅ Clean URL routing
-- ✅ Error handling and validation
+- **Admins:** Can create, assign, edit, and delete any task. Can assign tasks to any user.
+- **Users:** Can create tasks (assigned to themselves), update their status, and view only their own tasks.
 
-## 🏗️ Technical Architecture
+### Project Management
 
-### Frontend
-- **HTML5**: Semantic markup with modern structure
-- **CSS3**: Modern styling with Flexbox/Grid, animations, and responsive design
-- **JavaScript (ES6+)**: Class-based architecture with async/await
-- **Font Awesome**: Icons for enhanced visual experience
+- Tasks can be grouped into projects, each with a color for easy identification.
+- Projects can be created, edited, and deleted by admins.
 
-### Backend
-- **PHP 8.0+**: Object-oriented API design
-- **SQLite**: Lightweight, file-based database
-- **PDO**: Secure database abstraction layer
-- **RESTful API**: Clean endpoint design for all operations
+### Dashboard
 
-### Database Schema
-```sql
--- Projects table
-CREATE TABLE projects (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    color TEXT DEFAULT '#667eea',
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
+- Shows statistics: total, completed, pending, and overdue tasks.
+- Quick access to today's and upcoming tasks.
 
--- Tasks table
-CREATE TABLE tasks (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    description TEXT,
-    status TEXT DEFAULT 'pending',
-    priority TEXT DEFAULT 'medium',
-    due_date DATE,
-    due_time TIME,
-    project_id INTEGER,
-    tags TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (project_id) REFERENCES projects(id)
-);
+### User Management
+
+- Admins can add, edit, activate/deactivate, and delete users.
+- User roles and status can be changed by admins.
+
+### Security
+
+- Passwords are securely hashed.
+- All API endpoints enforce role-based access.
+- All user input is sanitized and validated.
+
+### Email Notifications
+
+- When enabled, users receive an email when a task is assigned to them.
+
+---
+
+## What You Need to Know to Own This App
+
+### Setup & Configuration
+- **Setup:** See the README for step-by-step setup. The app is self-initializing and creates its own database.
+- **Customization:** All business logic is in `/api/`. You can add new endpoints or features by editing these files.
+- **Frontend:** The UI is in `index.php` and `assets/js/script.js`. You can change the look and feel via `assets/css/style.css`.
+- **User Management:** Use the admin account to add/remove users and assign roles.
+- **Data:** All data is stored in `data/tasks.db` (SQLite). You can back up or migrate this file as needed.
+- **Security:** The app is secure by default, but you should always keep your PHP version up to date and use HTTPS in production.
+- **Email:** To enable email notifications, configure your server's mail settings and uncomment the mail code in `api/tasks.php`.
+
+### Technical Architecture
+
+#### Frontend (JavaScript)
+- **Main Class:** `TaskManager` in `assets/js/script.js`
+- **Authentication:** Session tokens stored in localStorage
+- **API Communication:** All data requests go through PHP API endpoints
+- **UI Updates:** Real-time updates when tasks are created, edited, or status changes
+
+#### Backend (PHP)
+- **API Structure:** RESTful endpoints in `/api/` directory
+- **Database:** SQLite with automatic schema creation
+- **Authentication:** Token-based sessions with automatic expiration
+- **Security:** Prepared statements, input validation, role-based access control
+
+#### Database Design
+- **Users Table:** Stores user accounts, roles, and authentication data
+- **Sessions Table:** Manages active user sessions with expiration
+- **Tasks Table:** Stores all task data with assignment tracking
+- **Projects Table:** Organizes tasks into projects with color coding
+
+### Key Features Implementation
+
+#### Role-Based Access Control
+- **Admin Role:** Full system access, user management, task assignment
+- **User Role:** Limited to own tasks, cannot assign to others
+- **API Enforcement:** All endpoints check user permissions before processing requests
+
+#### Task Management System
+- **Status Workflow:** Pending → In Progress → Completed
+- **Assignment System:** Admins can assign to any user, users assign to themselves
+- **Priority Levels:** High, Medium, Low with visual indicators
+- **Due Date Management:** Optional dates and times with overdue detection
+
+#### Project Organization
+- **Color Coding:** Each project has a customizable color
+- **Filtering:** Tasks can be filtered by project
+- **Visual Indicators:** Project colors appear in task lists and forms
+
+#### Dashboard Analytics
+- **Statistics:** Real-time counts of total, completed, pending, and overdue tasks
+- **Today's View:** Quick access to tasks due today
+- **Upcoming View:** Shows tasks with approaching deadlines
+- **Search & Filter:** Advanced filtering by status, priority, and project
+
+### Security Implementation
+
+#### Authentication Security
+- **Password Hashing:** Uses PHP's `password_hash()` with bcrypt
+- **Session Management:** Secure random tokens with 24-hour expiration
+- **Token Storage:** Tokens stored in localStorage and sent via HTTP headers
+
+#### Data Security
+- **SQL Injection Prevention:** All queries use prepared statements
+- **XSS Protection:** Input sanitization and output escaping
+- **Access Control:** Role-based permissions enforced at API level
+- **Input Validation:** All user input is validated and sanitized
+
+### File Structure & Organization
+
 ```
-
-## 📁 File Structure
-```
-task-manager/
-├── index.php              # Main application entry point
-├── config.php             # Application configuration
-├── test.php               # Installation test script
-├── .htaccess              # Apache configuration
-├── README.md              # Project documentation
-├── LICENSE                # MIT License
-├── PROJECT_SUMMARY.md     # This file
-├── assets/
-│   ├── css/
-│   │   └── style.css      # Main stylesheet
-│   └── js/
-│       └── script.js      # Application JavaScript
-├── api/
+Mini-Reconciliation-Tool/
+├── api/                    # Backend API endpoints
+│   ├── auth.php           # Authentication logic
+│   ├── auth_endpoints.php # Auth API endpoints
 │   ├── database.php       # Database connection & setup
-│   ├── tasks.php          # Tasks API endpoints
-│   └── projects.php       # Projects API endpoints
-└── data/
-    └── tasks.db           # SQLite database (auto-created)
+│   ├── projects.php       # Project management API
+│   └── tasks.php          # Task management API
+├── assets/                # Frontend assets
+│   ├── css/style.css      # Application styles
+│   └── js/script.js       # Frontend JavaScript logic
+├── data/                  # Data storage
+│   └── tasks.db           # SQLite database (auto-created)
+├── config.php             # Application configuration
+├── index.php              # Main application interface
+├── login.php              # Login page
+├── test_auth.php          # Authentication testing
+├── .htaccess              # Apache configuration
+├── README.md              # Setup & usage documentation
+└── PROJECT_SUMMARY.md     # This file
 ```
 
-## 🚀 API Endpoints
+### API Endpoints Reference
 
-### Tasks API (`/api/tasks.php`)
-- `GET` - Retrieve all tasks with project information
-- `POST` - Create a new task
-- `PUT` - Update existing task or change status
-- `DELETE` - Delete a task
+#### Authentication
+- `POST /api/auth_endpoints.php?action=login` - User login
+- `POST /api/auth_endpoints.php?action=logout` - User logout
+- `GET /api/auth_endpoints.php?action=me` - Get current user info
 
-### Projects API (`/api/projects.php`)
-- `GET` - Retrieve all projects with task counts
-- `POST` - Create a new project
-- `PUT` - Update existing project
-- `DELETE` - Delete project (tasks become unassigned)
+#### User Management (Admin Only)
+- `GET /api/auth_endpoints.php?action=users` - List all users
+- `POST /api/auth_endpoints.php?action=users` - Create new user
+- `PUT /api/auth_endpoints.php?action=users/update` - Update user
+- `DELETE /api/auth_endpoints.php?action=users/delete` - Delete user
 
-## 🎨 Design Highlights
+#### Task Management
+- `GET /api/tasks.php` - Get tasks (filtered by user role)
+- `POST /api/tasks.php` - Create new task
+- `PUT /api/tasks.php` - Update task
+- `DELETE /api/tasks.php?id={id}` - Delete task (admin only)
 
-### Color Scheme
-- Primary: Linear gradient (#667eea to #764ba2)
-- Success: #48bb78 (Green)
-- Warning: #ed8936 (Orange)
-- Error: #f56565 (Red)
-- Background: #f5f7fa (Light gray)
+#### Project Management
+- `GET /api/projects.php` - Get projects
+- `POST /api/projects.php` - Create new project
+- `PUT /api/projects.php` - Update project
+- `DELETE /api/projects.php?id={id}` - Delete project
 
-### Typography
-- Font Family: System fonts (-apple-system, BlinkMacSystemFont, 'Segoe UI', etc.)
-- Responsive font sizes with proper hierarchy
-- Consistent spacing and line heights
+### Default Users & Testing
 
-### UI Components
-- Card-based design for tasks and statistics
-- Sidebar navigation with project management
-- Modal dialogs for forms
-- Toast notifications for feedback
-- Responsive grid layouts
-- Hover effects and smooth animations
+| Username | Password  | Role  | Permissions |
+|----------|-----------|-------|-------------|
+| admin    | admin123  | Admin | Full system access |
+| john     | user123   | User  | Task viewing and updates |
+| jane     | user123   | User  | Task viewing and updates |
 
-## 🔧 Setup & Installation
+### Summary Table of Permissions
 
-1. **Prerequisites**:
-   - PHP 8.0+ with PDO and SQLite extensions
-   - Web server (Apache recommended)
+| Feature         | Admin | User |
+|-----------------|-------|------|
+| View all tasks  | ✔     |      |
+| View own tasks  | ✔     | ✔    |
+| Create tasks    | ✔     | ✔    |
+| Assign tasks    | ✔     |      |
+| Edit tasks      | ✔     | ✔ (own) |
+| Delete tasks    | ✔     |      |
+| Manage users    | ✔     |      |
+| Manage projects | ✔     |      |
+| Update status   | ✔     | ✔ (own) |
 
-2. **Installation**:
-   ```bash
-   # Clone or download the files
-   # Ensure proper permissions
-   chmod 755 data/
-   
-   # Test installation
-   php test.php
-   
-   # Start development server
-   php -S localhost:8000
-   ```
+### Customization & Extension
 
-3. **Access**:
-   - Application: `http://localhost:8000`
-   - Test page: `http://localhost:8000/test.php`
+#### Adding New Features
+1. **Backend:** Add new API endpoints in `/api/` directory
+2. **Frontend:** Extend the `TaskManager` class in `script.js`
+3. **Database:** Add new tables or columns as needed
+4. **UI:** Update `index.php` and `style.css` for new interface elements
 
-## 🛡️ Security Features
+#### Common Extensions
+- **File Attachments:** Add file upload functionality to tasks
+- **Comments System:** Allow users to comment on tasks
+- **Time Tracking:** Add time logging to tasks
+- **Reporting:** Create detailed reports and analytics
+- **Notifications:** Add in-app notifications or push notifications
+- **Calendar Integration:** Sync with external calendar systems
 
-- **Database Protection**: SQLite files blocked via .htaccess
-- **Input Validation**: Server-side validation for all inputs
-- **XSS Prevention**: HTML escaping for user content
-- **CORS Control**: Configurable cross-origin policies
-- **SQL Injection Protection**: PDO prepared statements
-- **Security Headers**: X-Frame-Options, X-Content-Type-Options, etc.
+### Deployment Considerations
 
-## 📱 Responsive Design
+#### Production Setup
+- **Web Server:** Use Apache or Nginx with PHP
+- **Database:** Consider migrating to MySQL/PostgreSQL for larger scale
+- **Security:** Enable HTTPS, set proper file permissions
+- **Backup:** Regular database backups
+- **Monitoring:** Set up error logging and monitoring
 
-- **Mobile-first approach**: Optimized for mobile devices
-- **Breakpoints**: 
-  - Mobile: < 768px
-  - Tablet: 768px - 1024px
-  - Desktop: > 1024px
-- **Touch-friendly**: Large touch targets and proper spacing
-- **Sidebar navigation**: Collapsible on mobile devices
+#### Performance Optimization
+- **Caching:** Implement caching for frequently accessed data
+- **Database Indexing:** Add indexes for common queries
+- **Asset Optimization:** Minify CSS/JS files
+- **CDN:** Use CDN for static assets
 
-## 🔮 Future Enhancements
+### Troubleshooting Guide
 
-Potential improvements for future versions:
-- User authentication and multi-user support
-- Task collaboration and sharing
-- File attachments for tasks
-- Calendar integration
-- Email notifications and reminders
-- Data export/import functionality
-- Advanced reporting and analytics
-- Drag-and-drop task organization
-- Dark mode theme
-- Progressive Web App (PWA) features
+#### Common Issues
+1. **Database Connection:** Check file permissions on `data/` directory
+2. **Authentication Errors:** Verify session tokens and user roles
+3. **API Errors:** Check browser console and server error logs
+4. **Permission Issues:** Ensure proper user roles and login status
 
-## 📄 License
+#### Debug Mode
+- Enable error reporting in PHP for development
+- Check browser console for JavaScript errors
+- Use `test_auth.php` to verify authentication system
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+---
 
-## 🏆 Achievement Summary
+## Final Notes
 
-✅ **Complete Task Management System** - Full CRUD operations
-✅ **Modern UI/UX** - Responsive, intuitive design
-✅ **RESTful API** - Clean, documented endpoints
-✅ **Database Integration** - Automatic setup with sample data
-✅ **Security Implemented** - Input validation and protection
-✅ **Mobile Responsive** - Works on all device sizes
-✅ **Production Ready** - Proper error handling and configuration
+- The app is production-ready, but you can extend it as you wish.
+- All code is well-commented and modular for easy maintenance.
+- If you want to add features (like file attachments, comments, etc.), just extend the API and frontend accordingly.
+- The system is designed to be scalable and can handle multiple users and projects.
+- Regular backups of the database file are recommended for production use.
 
-The TaskFlow application successfully provides a comprehensive task management solution with modern web development best practices, security considerations, and an excellent user experience.
+---
+
+**This app is now yours to own, customize, and extend as needed!**

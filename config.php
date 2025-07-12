@@ -21,7 +21,7 @@ define('ALLOWED_ORIGINS', '*'); // Change to specific domains in production
 
 // Feature Flags
 define('ENABLE_API_LOGGING', false);
-define('ENABLE_DEBUG_MODE', false);
+define('ENABLE_DEBUG_MODE', true);
 
 // Set timezone
 date_default_timezone_set(TIMEZONE);

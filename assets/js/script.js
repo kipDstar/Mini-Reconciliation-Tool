@@ -3,6 +3,7 @@ class TaskManager {
         this.currentView = 'dashboard';
         this.tasks = [];
         this.projects = [];
+        this.users = [];
         this.filteredTasks = [];
         this.searchTerm = '';
         this.filters = {
@@ -11,15 +12,78 @@ class TaskManager {
             project: ''
         };
         this.sortBy = 'created_desc';
+        this.currentUser = null;
+        this.sessionToken = null;
         
         this.init();
     }
 
     init() {
+        this.checkAuth();
         this.bindEvents();
         this.loadProjects();
         this.loadTasks();
+        this.loadUsers();
         this.updateUI();
+    }
+
+    checkAuth() {
+        this.sessionToken = localStorage.getItem('sessionToken');
+        const userData = localStorage.getItem('user');
+        
+        if (!this.sessionToken || !userData) {
+            window.location.href = 'login.php';
+            return;
+        }
+        
+        try {
+            this.currentUser = JSON.parse(userData);
+            this.updateUserInterface();
+        } catch (error) {
+            console.error('Error parsing user data:', error);
+            this.logout();
+        }
+    }
+
+    updateUserInterface() {
+        // Update user name in header
+        const userName = document.getElementById('userName');
+        if (userName) {
+            userName.textContent = this.currentUser.first_name || this.currentUser.username;
+        }
+        
+        // Show/hide admin elements
+        const adminElements = document.querySelectorAll('.admin-only');
+        adminElements.forEach(element => {
+            element.style.display = this.currentUser.role === 'admin' ? 'block' : 'none';
+        });
+        
+        // Update navigation for admin
+        if (this.currentUser.role === 'admin') {
+            const usersNavItem = document.querySelector('[data-view="users"]');
+            if (usersNavItem) {
+                usersNavItem.parentElement.style.display = 'block';
+            }
+        }
+    }
+
+    async logout() {
+        try {
+            if (this.sessionToken) {
+                await fetch('api/auth_endpoints.php?action=logout', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': this.sessionToken
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Logout error:', error);
+        } finally {
+            localStorage.removeItem('sessionToken');
+            localStorage.removeItem('user');
+            window.location.href = 'login.php';
+        }
     }
 
     bindEvents() {
@@ -37,6 +101,11 @@ class TaskManager {
             document.querySelector('.sidebar').classList.toggle('open');
         });
 
+        // Logout button
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            this.logout();
+        });
+
         // Add task button
         document.getElementById('addTaskBtn').addEventListener('click', () => {
             this.openTaskModal();
@@ -46,6 +115,14 @@ class TaskManager {
         document.getElementById('addProjectBtn').addEventListener('click', () => {
             this.openProjectModal();
         });
+
+        // Add user button (admin only)
+        const addUserBtn = document.getElementById('addUserBtn');
+        if (addUserBtn) {
+            addUserBtn.addEventListener('click', () => {
+                this.openUserModal();
+            });
+        }
 
         // Task form submission
         document.getElementById('taskForm').addEventListener('submit', (e) => {
@@ -58,6 +135,15 @@ class TaskManager {
             e.preventDefault();
             this.saveProject();
         });
+
+        // User form submission
+        const userForm = document.getElementById('userForm');
+        if (userForm) {
+            userForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.saveUser();
+            });
+        }
 
         // Modal close buttons
         document.getElementById('closeModal').addEventListener('click', () => {
@@ -75,6 +161,20 @@ class TaskManager {
         document.getElementById('cancelProject').addEventListener('click', () => {
             this.closeProjectModal();
         });
+
+        // User modal close buttons
+        const closeUserModal = document.getElementById('closeUserModal');
+        const cancelUser = document.getElementById('cancelUser');
+        if (closeUserModal) {
+            closeUserModal.addEventListener('click', () => {
+                this.closeUserModal();
+            });
+        }
+        if (cancelUser) {
+            cancelUser.addEventListener('click', () => {
+                this.closeUserModal();
+            });
+        }
 
         // Search functionality
         document.getElementById('searchInput').addEventListener('input', (e) => {
@@ -110,6 +210,8 @@ class TaskManager {
                     this.closeTaskModal();
                 } else if (e.target.id === 'projectModal') {
                     this.closeProjectModal();
+                } else if (e.target.id === 'userModal') {
+                    this.closeUserModal();
                 }
             }
         });
@@ -135,7 +237,8 @@ class TaskManager {
             'all-tasks': 'All Tasks',
             'today': 'Today',
             'upcoming': 'Upcoming',
-            'completed': 'Completed'
+            'completed': 'Completed',
+            'users': 'User Management'
         };
         document.getElementById('pageTitle').textContent = titles[view];
 
@@ -176,6 +279,9 @@ class TaskManager {
             case 'completed':
                 const completedTasks = this.tasks.filter(task => task.status === 'completed');
                 this.displayTasks('completedTasksList', completedTasks);
+                break;
+            case 'users':
+                this.displayUsers();
                 break;
         }
     }
@@ -462,6 +568,11 @@ class TaskManager {
         const formData = new FormData(document.getElementById('taskForm'));
         const taskData = Object.fromEntries(formData.entries());
         
+        // Add assigned user if admin and user is selected
+        if (this.currentUser.role === 'admin' && taskData.taskAssignedTo) {
+            taskData.assignedTo = taskData.taskAssignedTo;
+        }
+        
         this.showLoading();
 
         try {
@@ -472,6 +583,7 @@ class TaskManager {
                 method: method,
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': this.sessionToken
                 },
                 body: JSON.stringify(taskData)
             });
@@ -527,13 +639,19 @@ class TaskManager {
 
     async loadTasks() {
         try {
-            const response = await fetch('api/tasks.php');
+            const response = await fetch('api/tasks.php', {
+                headers: {
+                    'Authorization': this.sessionToken
+                }
+            });
             const result = await response.json();
 
             if (result.success) {
                 this.tasks = result.data.tasks || result.data;
                 this.filteredTasks = [...this.tasks];
                 this.filterAndDisplayTasks();
+            } else if (result.error === 'Authentication required') {
+                this.logout();
             }
         } catch (error) {
             console.error('Error loading tasks:', error);
@@ -556,6 +674,30 @@ class TaskManager {
             console.error('Error loading projects:', error);
             // Use sample data for demo
             this.loadSampleProjects();
+        }
+    }
+
+    async loadUsers() {
+        if (this.currentUser.role !== 'admin') return;
+        
+        try {
+            const response = await fetch('api/auth_endpoints.php?action=users', {
+                headers: {
+                    'Authorization': this.sessionToken
+                }
+            });
+            const result = await response.json();
+
+            if (result.success) {
+                this.users = result.users || [];
+                this.updateUserOptions();
+            } else if (result.error === 'Authentication required') {
+                this.logout();
+            }
+        } catch (error) {
+            console.error('Error loading users:', error);
+            // Use sample data for demo
+            this.loadSampleUsers();
         }
     }
 
@@ -630,6 +772,42 @@ class TaskManager {
         this.updateProjectOptions();
     }
 
+    loadSampleUsers() {
+        this.users = [
+            {
+                id: 1,
+                username: 'admin',
+                first_name: 'Admin',
+                last_name: 'User',
+                email: 'admin@taskflow.com',
+                role: 'admin',
+                is_active: 1,
+                created_at: '2023-01-01'
+            },
+            {
+                id: 2,
+                username: 'john',
+                first_name: 'John',
+                last_name: 'Doe',
+                email: 'john@example.com',
+                role: 'user',
+                is_active: 1,
+                created_at: '2023-01-02'
+            },
+            {
+                id: 3,
+                username: 'jane',
+                first_name: 'Jane',
+                last_name: 'Smith',
+                email: 'jane@example.com',
+                role: 'user',
+                is_active: 1,
+                created_at: '2023-01-03'
+            }
+        ];
+        this.updateUserOptions();
+    }
+
     updateProjectsList() {
         const container = document.getElementById('projectsList');
         container.innerHTML = this.projects.map(project => `
@@ -647,6 +825,8 @@ class TaskManager {
             });
         });
     }
+
+
 
     filterByProject(projectId) {
         this.filters.project = projectId;
@@ -666,6 +846,7 @@ class TaskManager {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': this.sessionToken
                 },
                 body: JSON.stringify({
                     taskId: taskId,
@@ -679,6 +860,8 @@ class TaskManager {
                 task.status = newStatus;
                 this.filterAndDisplayTasks();
                 this.showToast(`Task marked as ${newStatus}`, 'success');
+            } else if (result.error === 'Authentication required') {
+                this.logout();
             }
         } catch (error) {
             // For demo purposes, update locally
@@ -702,7 +885,10 @@ class TaskManager {
 
         try {
             const response = await fetch(`api/tasks.php?id=${taskId}`, {
-                method: 'DELETE'
+                method: 'DELETE',
+                headers: {
+                    'Authorization': this.sessionToken
+                }
             });
 
             const result = await response.json();
@@ -711,6 +897,8 @@ class TaskManager {
                 this.tasks = this.tasks.filter(t => t.id !== taskId);
                 this.filterAndDisplayTasks();
                 this.showToast('Task deleted successfully', 'success');
+            } else if (result.error === 'Authentication required') {
+                this.logout();
             }
         } catch (error) {
             // For demo purposes, delete locally
@@ -718,6 +906,136 @@ class TaskManager {
             this.filterAndDisplayTasks();
             this.showToast('Task deleted successfully', 'success');
         }
+    }
+
+    openUserModal(user = null) {
+        const modal = document.getElementById('userModal');
+        const form = document.getElementById('userForm');
+        
+        if (user) {
+            // Editing existing user
+            document.getElementById('userModalTitle').textContent = 'Edit User';
+            document.getElementById('userId').value = user.id;
+            document.getElementById('userUsername').value = user.username;
+            document.getElementById('userFirstName').value = user.first_name || '';
+            document.getElementById('userLastName').value = user.last_name || '';
+            document.getElementById('userEmail').value = user.email;
+            document.getElementById('userRole').value = user.role;
+            document.getElementById('userStatus').value = user.is_active ? '1' : '0';
+            document.getElementById('userPassword').value = '';
+        } else {
+            // Creating new user
+            document.getElementById('userModalTitle').textContent = 'Add New User';
+            form.reset();
+            document.getElementById('userId').value = '';
+        }
+
+        modal.classList.add('active');
+    }
+
+    closeUserModal() {
+        document.getElementById('userModal').classList.remove('active');
+    }
+
+    async saveUser() {
+        const formData = new FormData(document.getElementById('userForm'));
+        const userData = Object.fromEntries(formData.entries());
+        
+        // Map form field names to backend expected names
+        const mappedData = {
+            username: userData.userUsername,
+            email: userData.userEmail,
+            password: userData.userPassword,
+            first_name: userData.userFirstName,
+            last_name: userData.userLastName,
+            role: userData.userRole,
+            is_active: userData.userStatus
+        };
+        
+        // Add ID if editing
+        if (userData.userId) {
+            mappedData.id = userData.userId;
+        }
+        
+        // Debug: Log the data being sent
+        console.log('Form data:', userData);
+        console.log('Mapped data:', mappedData);
+        
+        this.showLoading();
+
+        try {
+            const url = userData.userId ? 'api/auth_endpoints.php?action=users/update' : 'api/auth_endpoints.php?action=users';
+            const method = userData.userId ? 'PUT' : 'POST';
+            
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': this.sessionToken
+                },
+                body: JSON.stringify(mappedData)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                this.showToast(userData.userId ? 'User updated successfully' : 'User created successfully', 'success');
+                this.closeUserModal();
+                this.loadUsers();
+            } else {
+                this.showToast(result.message || 'Error saving user', 'error');
+            }
+        } catch (error) {
+            this.showToast('Error saving user', 'error');
+            console.error('Error:', error);
+        }
+
+        this.hideLoading();
+    }
+
+    editUser(userId) {
+        const user = this.users.find(u => u.id === userId);
+        if (user) {
+            this.openUserModal(user);
+        }
+    }
+
+    async deleteUser(userId) {
+        if (!confirm('Are you sure you want to delete this user?')) {
+            return;
+        }
+
+        this.showLoading();
+
+        try {
+            const response = await fetch('api/auth_endpoints.php?action=users/delete', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': this.sessionToken
+                },
+                body: JSON.stringify({ id: userId })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                this.users = this.users.filter(u => u.id != userId);
+                this.updateUserOptions();
+                this.displayUsers();
+                this.showToast('User deleted successfully', 'success');
+            } else {
+                this.showToast(result.message || 'Error deleting user', 'error');
+            }
+        } catch (error) {
+            // For demo purposes, delete locally
+            this.users = this.users.filter(u => u.id != userId);
+            this.updateUserOptions();
+            this.displayUsers();
+            this.showToast('User deleted successfully', 'success');
+        }
+
+        this.hideLoading();
     }
 
     // Utility functions
@@ -766,10 +1084,49 @@ class TaskManager {
 
     updateUI() {
         this.updateViewContent();
+        this.updateProjectsList();
+        this.updateProjectOptions();
+        this.updateUserOptions();
+    }
+
+    updateUserOptions() {
+        const userSelect = document.getElementById('taskAssignedTo');
+        if (userSelect && this.currentUser.role === 'admin') {
+            userSelect.innerHTML = '<option value="">Select User</option>';
+            this.users.forEach(user => {
+                const option = document.createElement('option');
+                option.value = user.id;
+                option.textContent = `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.username;
+                userSelect.appendChild(option);
+            });
+        }
+    }
+
+    displayUsers() {
+        const container = document.getElementById('usersTableBody');
+        if (!container) return;
+
+        container.innerHTML = this.users.map(user => `
+            <tr>
+                <td>${this.escapeHtml(user.username)}</td>
+                <td>${this.escapeHtml(user.email)}</td>
+                <td>${this.escapeHtml(user.first_name || '')} ${this.escapeHtml(user.last_name || '')}</td>
+                <td><span class="user-role ${user.role}">${this.escapeHtml(user.role)}</span></td>
+                <td><span class="user-status ${user.is_active ? 'active' : 'inactive'}">${user.is_active ? 'Active' : 'Inactive'}</span></td>
+                <td class="user-actions">
+                    <button class="user-action edit" onclick="taskManager.editUser(${user.id})">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button class="user-action delete" onclick="taskManager.deleteUser(${user.id})">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </td>
+            </tr>
+        `).join('');
     }
 }
 
 // Initialize the app when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    new TaskManager();
+    window.taskManager = new TaskManager();
 });
