@@ -13,7 +13,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 try {
     require_once 'database.php';
-    require_once 'auth.php';
+require_once 'auth.php';
+require_once 'email_service.php';
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode([
@@ -308,47 +309,30 @@ class TasksAPI {
     }
     
     private function sendTaskAssignmentEmail($taskId, $userId) {
-        // Get task and user details
+        // Get task and user details with project info
         $stmt = $this->db->query(
-            "SELECT t.title, t.description, t.due_date, u.email, u.first_name, u.last_name 
+            "SELECT t.*, p.name as project_name, u.email, u.first_name, u.last_name 
              FROM tasks t 
              JOIN users u ON t.assigned_to = u.id 
+             LEFT JOIN projects p ON t.project_id = p.id
              WHERE t.id = ?",
             [$taskId]
         );
         
-        $data = $stmt->fetch();
-        if (!$data) {
+        $task = $stmt->fetch();
+        if (!$task) {
             return;
         }
         
-        // Simple email notification (in production, use a proper email library)
-        $to = $data['email'];
-        $subject = "New Task Assigned: " . $data['title'];
-        $message = "
-        Hello " . ($data['first_name'] ?: $data['last_name'] ?: 'there') . ",
+        $user = [
+            'email' => $task['email'],
+            'first_name' => $task['first_name'],
+            'last_name' => $task['last_name']
+        ];
         
-        A new task has been assigned to you:
-        
-        Title: " . $data['title'] . "
-        Description: " . ($data['description'] ?: 'No description') . "
-        Due Date: " . ($data['due_date'] ?: 'No due date') . "
-        
-        Please log in to your TaskFlow account to view and update this task.
-        
-        Best regards,
-        TaskFlow Team
-        ";
-        
-        $headers = "From: noreply@taskflow.com\r\n";
-        $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
-        
-        // In a real application, you would use a proper email service
-        // For now, we'll just log the email
-        error_log("Email notification sent to: $to - Subject: $subject");
-        
-        // Uncomment the line below to actually send emails (requires proper email setup)
-        // mail($to, $subject, $message, $headers);
+        // Use the email service to send the notification
+        $emailService = getEmailService();
+        $emailService->sendTaskAssignment($task, $user);
     }
     
     private function getJsonInput() {

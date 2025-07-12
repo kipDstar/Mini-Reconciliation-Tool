@@ -14,6 +14,8 @@ class TaskManager {
         this.sortBy = 'created_desc';
         this.currentUser = null;
         this.sessionToken = null;
+        this.eventSource = null;
+        this.realtimeEnabled = true;
         
         this.init();
     }
@@ -25,6 +27,7 @@ class TaskManager {
         this.loadTasks();
         this.loadUsers();
         this.updateUI();
+        this.initRealtimeUpdates();
     }
 
     checkAuth() {
@@ -80,6 +83,7 @@ class TaskManager {
         } catch (error) {
             console.error('Logout error:', error);
         } finally {
+            this.closeRealtimeConnection();
             localStorage.removeItem('sessionToken');
             localStorage.removeItem('user');
             window.location.href = 'login.php';
@@ -1123,6 +1127,73 @@ class TaskManager {
                 </td>
             </tr>
         `).join('');
+    }
+
+    // Real-time Updates
+    initRealtimeUpdates() {
+        if (!this.realtimeEnabled || !this.sessionToken) return;
+        
+        try {
+            this.eventSource = new EventSource(`api/realtime.php`, {
+                headers: {
+                    'Authorization': this.sessionToken
+                }
+            });
+            
+            this.eventSource.onopen = () => {
+                console.log('Real-time connection established');
+            };
+            
+            this.eventSource.onmessage = (event) => {
+                console.log('SSE message:', event.data);
+            };
+            
+            this.eventSource.addEventListener('connected', (event) => {
+                console.log('Connected to real-time updates');
+            });
+            
+            this.eventSource.addEventListener('task_update', (event) => {
+                const data = JSON.parse(event.data);
+                console.log('Task update received:', data);
+                this.showToast('Tasks have been updated', 'info');
+                this.loadTasks(); // Refresh tasks
+            });
+            
+            this.eventSource.addEventListener('user_update', (event) => {
+                const data = JSON.parse(event.data);
+                console.log('User update received:', data);
+                if (this.currentUser.role === 'admin') {
+                    this.showToast('Users have been updated', 'info');
+                    this.loadUsers(); // Refresh users
+                }
+            });
+            
+            this.eventSource.addEventListener('heartbeat', (event) => {
+                // Keep connection alive
+            });
+            
+            this.eventSource.onerror = (error) => {
+                console.error('Real-time connection error:', error);
+                this.reconnectRealtime();
+            };
+            
+        } catch (error) {
+            console.error('Failed to initialize real-time updates:', error);
+        }
+    }
+    
+    closeRealtimeConnection() {
+        if (this.eventSource) {
+            this.eventSource.close();
+            this.eventSource = null;
+        }
+    }
+    
+    reconnectRealtime() {
+        this.closeRealtimeConnection();
+        setTimeout(() => {
+            this.initRealtimeUpdates();
+        }, 5000); // Retry after 5 seconds
     }
 }
 

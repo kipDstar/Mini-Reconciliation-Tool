@@ -225,16 +225,20 @@ Mini-Reconciliation-Tool/
 - UI is in `index.php` and styled with `assets/css/style.css`.
 - You can add new features by extending the PHP API and updating the JS frontend.
 
-## Future Enhancements
+## Current Features
+
+### ✅ Implemented Features
+- **Real Email Integration:** SMTP email service with HTML templates
+- **Real-time Updates:** Server-Sent Events for live task updates
+- **File Attachments:** Upload and manage files with tasks (max 10MB)
+- **Advanced Email Templates:** Task assignments, reminders, daily digests
+- **Live Notifications:** Real-time task and user update notifications
 
 ### Planned Features
-- **Real Email Integration:** SMTP with PHPMailer, email templates, digest emails
-- **Real-time Updates:** WebSocket integration for live collaboration
 - **Advanced Analytics:** Productivity metrics, time tracking, performance dashboards
 - **Smart Features:** AI-powered suggestions, automatic prioritization
 - **Mobile PWA:** Progressive web app with offline support
 - **Calendar Integration:** Google Calendar sync, meeting scheduling
-- **File Attachments:** Upload and manage files with tasks
 - **Team Collaboration:** Workspaces, shared templates, team insights
 - **Third-party Integrations:** Slack, GitHub, Google Workspace
 - **Automation:** Workflow rules, auto-assignment, escalation
