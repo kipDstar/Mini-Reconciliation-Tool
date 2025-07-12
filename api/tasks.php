@@ -64,6 +64,7 @@ class TasksAPI {
     
     private function createTask() {
         $input = $this->getJsonInput();
+        error_log('POST input: ' . json_encode($input)); // Add this line for debugging
         
         // Validate required fields
         if (empty($input['taskTitle'])) {

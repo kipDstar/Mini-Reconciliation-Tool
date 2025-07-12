@@ -200,22 +200,22 @@
             </div>
             
             <form id="taskForm" class="modal-body">
-                <input type="hidden" id="taskId">
+                <input type="hidden" id="taskId" name="taskId">
                 
                 <div class="form-group">
                     <label for="taskTitle">Task Title *</label>
-                    <input type="text" id="taskTitle" required placeholder="Enter task title">
+                    <input type="text" id="taskTitle" name="taskTitle" required placeholder="Enter task title">
                 </div>
                 
                 <div class="form-group">
                     <label for="taskDescription">Description</label>
-                    <textarea id="taskDescription" rows="3" placeholder="Enter task description"></textarea>
+                    <textarea id="taskDescription" name="taskDescription" rows="3" placeholder="Enter task description"></textarea>
                 </div>
                 
                 <div class="form-row">
                     <div class="form-group">
                         <label for="taskPriority">Priority</label>
-                        <select id="taskPriority">
+                        <select id="taskPriority" name="taskPriority">
                             <option value="low">Low</option>
                             <option value="medium" selected>Medium</option>
                             <option value="high">High</option>
@@ -224,7 +224,7 @@
                     
                     <div class="form-group">
                         <label for="taskProject">Project</label>
-                        <select id="taskProject">
+                        <select id="taskProject" name="taskProject">
                             <option value="">No Project</option>
                         </select>
                     </div>
@@ -233,18 +233,18 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="taskDueDate">Due Date</label>
-                        <input type="date" id="taskDueDate">
+                        <input type="date" id="taskDueDate" name="taskDueDate">
                     </div>
                     
                     <div class="form-group">
                         <label for="taskDueTime">Due Time</label>
-                        <input type="time" id="taskDueTime">
+                        <input type="time" id="taskDueTime" name="taskDueTime">
                     </div>
                 </div>
                 
                 <div class="form-group">
                     <label for="taskTags">Tags (comma separated)</label>
-                    <input type="text" id="taskTags" placeholder="work, urgent, meeting">
+                    <input type="text" id="taskTags" name="taskTags" placeholder="work, urgent, meeting">
                 </div>
             </form>
             
@@ -268,13 +268,13 @@
             <form id="projectForm" class="modal-body">
                 <div class="form-group">
                     <label for="projectName">Project Name *</label>
-                    <input type="text" id="projectName" required placeholder="Enter project name">
+                    <input type="text" id="projectName" name="projectName" required placeholder="Enter project name">
                 </div>
                 
                 <div class="form-group">
                     <label for="projectColor">Color</label>
                     <div class="color-picker">
-                        <input type="color" id="projectColor" value="#667eea">
+                        <input type="color" id="projectColor" name="projectColor" value="#667eea">
                     </div>
                 </div>
             </form>
