@@ -1134,11 +1134,7 @@ class TaskManager {
         if (!this.realtimeEnabled || !this.sessionToken) return;
         
         try {
-            this.eventSource = new EventSource(`api/realtime.php`, {
-                headers: {
-                    'Authorization': this.sessionToken
-                }
-            });
+            this.eventSource = new EventSource(`api/realtime.php?token=${encodeURIComponent(this.sessionToken)}`);
             
             this.eventSource.onopen = () => {
                 console.log('Real-time connection established');
@@ -1170,6 +1166,12 @@ class TaskManager {
             
             this.eventSource.addEventListener('heartbeat', (event) => {
                 // Keep connection alive
+            });
+            
+            this.eventSource.addEventListener('error', (event) => {
+                const data = JSON.parse(event.data);
+                console.error('Real-time error:', data.error);
+                this.showToast(`Real-time error: ${data.error}`, 'error');
             });
             
             this.eventSource.onerror = (error) => {

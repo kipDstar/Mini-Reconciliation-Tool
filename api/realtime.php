@@ -8,21 +8,23 @@ header('Access-Control-Allow-Headers: Content-Type, Authorization');
 require_once 'database.php';
 require_once 'auth.php';
 
-// Get user from session
-$headers = getallheaders();
-$session_token = $headers['Authorization'] ?? $headers['authorization'] ?? null;
+// Get session token from query parameter since EventSource doesn't support custom headers
+$session_token = $_GET['token'] ?? null;
 
 if (!$session_token) {
     http_response_code(401);
+    echo "event: error\n";
+    echo "data: " . json_encode(['error' => 'No session token provided']) . "\n\n";
     exit;
 }
 
-$session_token = str_replace('Bearer ', '', $session_token);
 $auth = getAuth();
 $user = $auth->getCurrentUser($session_token);
 
 if (!$user) {
     http_response_code(401);
+    echo "event: error\n";
+    echo "data: " . json_encode(['error' => 'Invalid session token']) . "\n\n";
     exit;
 }
 
