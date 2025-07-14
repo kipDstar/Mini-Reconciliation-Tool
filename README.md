@@ -52,7 +52,7 @@ A modern, role-based task management application built with PHP, JavaScript, and
 
 ### User Experience
 
-- **Login:** Users log in at `/login.php` using their credentials.
+- **Login:** Users log in at `/frontend/login.php` using their credentials.
 - **Dashboard:** After login, users see a dashboard with stats and their tasks.
 - **Task Management:** Users can create tasks (assigned to themselves). Admins can assign tasks to any user.
 - **Project Management:** Tasks can be grouped into projects for better organization.
@@ -61,9 +61,9 @@ A modern, role-based task management application built with PHP, JavaScript, and
 
 ### Technical Flow
 
-- **Frontend:** All UI is in `index.php` and handled by `assets/js/script.js`.
-- **Backend:** All data is served via PHP API endpoints in `/api/`.
-- **Database:** SQLite file at `data/tasks.db` (auto-created on first run).
+- **Frontend:** All UI is in `frontend/index.php` and handled by `frontend/assets/js/script.js`.
+- **Backend:** All data is served via PHP API endpoints in `/backend/api/`.
+- **Database:** SQLite file at `backend/data/tasks.db` (auto-created on first run).
 - **Authentication:** Uses session tokens stored in localStorage and sent via HTTP headers.
 
 ---
@@ -81,27 +81,28 @@ A modern, role-based task management application built with PHP, JavaScript, and
 1. **Clone or Download the Project**
    ```bash
    git clone <repository-url>
-   cd Mini-Reconciliation-Tool
+   cd Task-Manager-Project
    ```
 
 2. **Start the PHP Server**
    ```bash
+   # Serve from the root directory to access both frontend and backend
    php -S localhost:8000
    ```
    Or configure your web server to point to this directory.
 
 3. **Set Permissions**
-   - Make sure the `data/` directory is writable by the web server:
+   - Make sure the `backend/data/` directory is writable by the web server:
      ```bash
-     chmod 775 data
+     chmod 775 backend/data
      ```
 
 4. **Access the App**
-   - Open your browser and go to: [http://localhost:8000/login.php](http://localhost:8000/login.php)
+   - Open your browser and go to: [http://localhost:8000/frontend/login.php](http://localhost:8000/frontend/login.php)
    - The database and sample data will be created automatically on first run.
 
 5. **Test Authentication**
-   - Visit [http://localhost:8000/test_auth.php](http://localhost:8000/test_auth.php) to verify the authentication system.
+   - Visit [http://localhost:8000/backend/test_auth.php](http://localhost:8000/backend/test_auth.php) to verify the authentication system.
 
 ---
 
@@ -133,24 +134,24 @@ A modern, role-based task management application built with PHP, JavaScript, and
 ## API Endpoints
 
 - **Authentication**
-  - `POST /api/auth_endpoints.php?action=login` (login)
-  - `POST /api/auth_endpoints.php?action=logout` (logout)
-  - `GET /api/auth_endpoints.php?action=me` (current user info)
+  - `POST /backend/api/auth_endpoints.php?action=login` (login)
+  - `POST /backend/api/auth_endpoints.php?action=logout` (logout)
+  - `GET /backend/api/auth_endpoints.php?action=me` (current user info)
 - **User Management (Admin only)**
-  - `GET /api/auth_endpoints.php?action=users`
-  - `POST /api/auth_endpoints.php?action=users`
-  - `PUT /api/auth_endpoints.php?action=users/update`
-  - `DELETE /api/auth_endpoints.php?action=users/delete`
+  - `GET /backend/api/auth_endpoints.php?action=users`
+  - `POST /backend/api/auth_endpoints.php?action=users`
+  - `PUT /backend/api/auth_endpoints.php?action=users/update`
+  - `DELETE /backend/api/auth_endpoints.php?action=users/delete`
 - **Tasks**
-  - `GET /api/tasks.php`
-  - `POST /api/tasks.php`
-  - `PUT /api/tasks.php`
-  - `DELETE /api/tasks.php?id={id}`
+  - `GET /backend/api/tasks.php`
+  - `POST /backend/api/tasks.php`
+  - `PUT /backend/api/tasks.php`
+  - `DELETE /backend/api/tasks.php?id={id}`
 - **Projects**
-  - `GET /api/projects.php`
-  - `POST /api/projects.php`
-  - `PUT /api/projects.php`
-  - `DELETE /api/projects.php?id={id}`
+  - `GET /backend/api/projects.php`
+  - `POST /backend/api/projects.php`
+  - `PUT /backend/api/projects.php`
+  - `DELETE /backend/api/projects.php?id={id}`
 
 ---
 
@@ -178,7 +179,7 @@ A modern, role-based task management application built with PHP, JavaScript, and
 - Email notifications are implemented but **disabled by default**.
 - To enable:
   1. Configure your server's mail settings.
-  2. Uncomment the `mail()` function in `api/tasks.php`.
+  2. Uncomment the `mail()` function in `backend/api/tasks.php`.
   3. Update the sender email address as needed.
 
 ---
@@ -186,43 +187,54 @@ A modern, role-based task management application built with PHP, JavaScript, and
 ## File Structure
 
 ```
-Mini-Reconciliation-Tool/
-├── api/
-│   ├── auth.php
-│   ├── auth_endpoints.php
-│   ├── database.php
-│   ├── projects.php
-│   └── tasks.php
-├── assets/
-│   ├── css/style.css
-│   └── js/script.js
-├── data/
-│   └── tasks.db
-├── config.php
-├── index.php
-├── login.php
-├── test_auth.php
-├── .htaccess
+Task-Manager-Project/
+├── backend/
+│   ├── api/
+│   │   ├── auth.php
+│   │   ├── auth_endpoints.php
+│   │   ├── database.php
+│   │   ├── projects.php
+│   │   ├── tasks.php
+│   │   ├── realtime.php
+│   │   ├── attachments.php
+│   │   └── email_service.php
+│   ├── config/
+│   │   └── email_config.php
+│   ├── data/
+│   │   └── tasks.db
+│   ├── uploads/
+│   ├── config.php
+│   ├── database_dump.sql
+│   ├── test_auth.php
+│   └── test.php
+├── frontend/
+│   ├── assets/
+│   │   ├── css/style.css
+│   │   └── js/script.js
+│   ├── index.php
+│   ├── login.php
+│   └── .htaccess
 ├── README.md
-└── PROJECT_SUMMARY.md
+├── PROJECT_SUMMARY.md
+└── LICENSE
 ```
 
 ---
 
 ## Troubleshooting
 
-- **Database errors:** Ensure `data/` is writable and PHP SQLite extension is enabled.
-- **Authentication issues:** Use `test_auth.php` to verify, and check browser console for JS errors.
-- **API not found:** Ensure `.htaccess` is present and mod_rewrite is enabled (if using Apache).
+- **Database errors:** Ensure `backend/data/` is writable and PHP SQLite extension is enabled.
+- **Authentication issues:** Use `backend/test_auth.php` to verify, and check browser console for JS errors.
+- **API not found:** Ensure `frontend/.htaccess` is present and mod_rewrite is enabled (if using Apache).
 - **Permission errors:** Check your user role and login status.
 
 ---
 
 ## Development & Customization
 
-- All business logic is in `/api/` (PHP).
-- Frontend logic is in `assets/js/script.js`.
-- UI is in `index.php` and styled with `assets/css/style.css`.
+- All business logic is in `/backend/api/` (PHP).
+- Frontend logic is in `frontend/assets/js/script.js`.
+- UI is in `frontend/index.php` and styled with `frontend/assets/css/style.css`.
 - You can add new features by extending the PHP API and updating the JS frontend.
 
 ## Current Features
@@ -253,4 +265,4 @@ Mini-Reconciliation-Tool/
 
 ## License
 
-MIT License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
