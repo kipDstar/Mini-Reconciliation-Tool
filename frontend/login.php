@@ -190,7 +190,7 @@
             loginSpinner.style.display = 'inline-block';
             
             try {
-                const response = await fetch('api/auth_endpoints.php?action=login', {
+                const response = await fetch('../backend/api/auth_endpoints.php?action=login', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

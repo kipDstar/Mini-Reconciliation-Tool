@@ -73,7 +73,7 @@ class TaskManager {
     async logout() {
         try {
             if (this.sessionToken) {
-                await fetch('api/auth_endpoints.php?action=logout', {
+                await fetch('../backend/api/auth_endpoints.php?action=logout', {
                     method: 'POST',
                     headers: {
                         'Authorization': this.sessionToken
@@ -580,7 +580,7 @@ class TaskManager {
         this.showLoading();
 
         try {
-            const url = taskData.taskId ? 'api/tasks.php' : 'api/tasks.php';
+            const url = taskData.taskId ? '../backend/api/tasks.php' : '../backend/api/tasks.php';
             const method = taskData.taskId ? 'PUT' : 'POST';
             
             const response = await fetch(url, {
@@ -616,7 +616,7 @@ class TaskManager {
         this.showLoading();
 
         try {
-            const response = await fetch('api/projects.php', {
+            const response = await fetch('../backend/api/projects.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -643,7 +643,7 @@ class TaskManager {
 
     async loadTasks() {
         try {
-            const response = await fetch('api/tasks.php', {
+            const response = await fetch('../backend/api/tasks.php', {
                 headers: {
                     'Authorization': this.sessionToken
                 }
@@ -666,7 +666,7 @@ class TaskManager {
 
     async loadProjects() {
         try {
-            const response = await fetch('api/projects.php');
+            const response = await fetch('../backend/api/projects.php');
             const result = await response.json();
 
             if (result.success) {
@@ -685,7 +685,7 @@ class TaskManager {
         if (this.currentUser.role !== 'admin') return;
         
         try {
-            const response = await fetch('api/auth_endpoints.php?action=users', {
+            const response = await fetch('../backend/api/auth_endpoints.php?action=users', {
                 headers: {
                     'Authorization': this.sessionToken
                 }
@@ -846,7 +846,7 @@ class TaskManager {
         const newStatus = task.status === 'completed' ? 'pending' : 'completed';
 
         try {
-            const response = await fetch('api/tasks.php', {
+            const response = await fetch('../backend/api/tasks.php', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -888,7 +888,7 @@ class TaskManager {
         }
 
         try {
-            const response = await fetch(`api/tasks.php?id=${taskId}`, {
+            const response = await fetch(`../backend/api/tasks.php?id=${taskId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': this.sessionToken
@@ -968,7 +968,7 @@ class TaskManager {
         this.showLoading();
 
         try {
-            const url = userData.userId ? 'api/auth_endpoints.php?action=users/update' : 'api/auth_endpoints.php?action=users';
+            const url = userData.userId ? '../backend/api/auth_endpoints.php?action=users/update' : '../backend/api/auth_endpoints.php?action=users';
             const method = userData.userId ? 'PUT' : 'POST';
             
             const response = await fetch(url, {
@@ -1012,7 +1012,7 @@ class TaskManager {
         this.showLoading();
 
         try {
-            const response = await fetch('api/auth_endpoints.php?action=users/delete', {
+            const response = await fetch('../backend/api/auth_endpoints.php?action=users/delete', {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1134,7 +1134,7 @@ class TaskManager {
         if (!this.realtimeEnabled || !this.sessionToken) return;
         
         try {
-            this.eventSource = new EventSource(`api/realtime.php?token=${encodeURIComponent(this.sessionToken)}`);
+            this.eventSource = new EventSource(`../backend/api/realtime.php?token=${encodeURIComponent(this.sessionToken)}`);
             
             this.eventSource.onopen = () => {
                 console.log('Real-time connection established');
